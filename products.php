@@ -1,3 +1,4 @@
+
 <?php
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/includes/functions.php';
@@ -5,7 +6,7 @@ require_once __DIR__ . '/includes/functions.php';
 $pageTitle = 'Accessories | MobileCare';
 
 $stmt = $pdo->query(
-    'SELECT id, name, category, description, price, image
+    'SELECT id, name, category, description, price, image, stock_quantity
      FROM products
      WHERE is_active = 1 AND stock_quantity > 0
      ORDER BY created_at DESC'
@@ -23,26 +24,47 @@ require_once __DIR__ . '/includes/header.php';
 
     <div class="feature-grid">
         <?php foreach ($products as $product): ?>
-            <article class="feature-card">
-                <?php if (!empty($product['image'])): ?>
-                    <img
-                        src="<?= e($product['image']) ?>"
-                        alt="<?= e($product['name']) ?>"
-                        loading="lazy"
-                        style="width:100%;height:180px;object-fit:contain"
-                    >
-                <?php else: ?>
-                    <div class="feature-icon">📱</div>
-                <?php endif; ?>
+            <article class="feature-card product-card">
+
+                <?php
+                $imageName = $product['image'] ?? '';
+                $imagePath = __DIR__ . '/assets/images/products/' . $imageName;
+
+                $hasImage = $imageName !== ''
+                    && basename($imageName) === $imageName
+                    && is_file($imagePath);
+                ?>
+
+                <div class="product-image">
+                    <?php if ($hasImage): ?>
+                        <img
+                            src="assets/images/products/<?= rawurlencode($imageName) ?>"
+                            alt="<?= e($product['name']) ?>"
+                            loading="lazy"
+                        >
+                    <?php else: ?>
+                        <div class="product-placeholder" aria-label="No product image">
+                            <span>📱</span>
+                            <small>Image coming soon</small>
+                        </div>
+                    <?php endif; ?>
+                </div>
 
                 <p class="eyebrow"><?= e($product['category']) ?></p>
+
                 <h3><?= e($product['name']) ?></h3>
+
                 <p><?= e($product['description'] ?? '') ?></p>
 
-                <strong><?= e(formatPrice($product['price'])) ?></strong>
+                <strong class="product-price">
+                    <?= e(formatPrice($product['price'])) ?>
+                </strong>
+
+                <p class="product-stock">In Stock</p>
 
                 <p>
-                    <a class="text-link" href="contact.php">
+                    <a class="text-link"
+                       href="contact.php">
                         Enquire about this product →
                     </a>
                 </p>
