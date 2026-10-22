@@ -1,122 +1,57 @@
-
 <?php
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/_layout.php';
 
-$stmt = $pdo->query(
-    'SELECT id, name, category, price, stock_quantity, is_active
-     FROM products
-     ORDER BY id DESC'
-);
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$stmt = $pdo->query('SELECT id, name, category, price, image, stock_quantity, is_active FROM products ORDER BY id DESC');
+$products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$products = $stmt->fetchAll();
+admin_header('Manage Products', 'products');
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Manage Products | MobileCare</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 30px;
-            background: #f4f7fb;
-            color: #172033;
-        }
-        .table-wrap {
-            overflow-x: auto;
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
-            text-align: left;
-        }
-        a { color: #155eef; }
-        .action { white-space: nowrap; }
-        .status { font-weight: bold; }
-    </style>
-</head>
-<body>
-    <h1>Manage Products</h1>
-
-    <p>
-        <a href="dashboard.php">Dashboard</a> |
-        <a href="product-form.php">+ Add New Product</a> |
-        <a href="logout.php">Logout</a>
-    </p>
-
-    <?php if (isset($_GET['added'])): ?>
-        <p>Product added successfully!</p>
-    <?php endif; ?>
-
-    <?php if (isset($_GET['updated'])): ?>
-        <p>Product updated successfully!</p>
-    <?php endif; ?>
-
-    <?php if (isset($_GET['status_changed'])): ?>
-        <p>Product status changed successfully!</p>
-    <?php endif; ?>
-
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Price</th>
-                    <th>Stock</th>
-                    <th>Active</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($products as $product): ?>
-                    <tr>
-                        <td><?= (int) $product['id'] ?></td>
-                        <td><?= e($product['name']) ?></td>
-                        <td><?= e($product['category']) ?></td>
-                        <td><?= e(formatPrice($product['price'])) ?></td>
-                        <td><?= (int) $product['stock_quantity'] ?></td>
-                        <td class="status">
-                            <?= (int) $product['is_active'] === 1
-                                ? 'Yes' : 'No' ?>
-                        </td>
-                        <td class="action">
-                            <a href="product-edit.php?id=<?= (int) $product['id'] ?>">
-                                Edit
-                            </a>
-                            |
-                           <form method="post" action="product-toggle.php"
-      style="display:inline">
-    <input type="hidden" name="id"
-           value="<?= (int) $product['id'] ?>">
-    <input type="hidden" name="csrf_token"
-           value="<?= e($_SESSION['csrf_token']) ?>">
-
-    <button type="submit">
-        <?= (int) $product['is_active'] === 1
-            ? 'Deactivate' : 'Activate' ?>
-    </button>
+<div class="page-heading"><div><h2>Manage Products</h2><p>Review product information, edit details or change availability.</p></div><a class="btn" href="product-form.php">＋ Add Product</a></div>
+<?php if (isset($_GET['added'])): ?><div class="alert alert-success">Product added successfully.</div><?php endif; ?>
+<?php if (isset($_GET['updated'])): ?><div class="alert alert-success">Product updated successfully.</div><?php endif; ?>
+<?php if (isset($_GET['status_changed'])): ?><div class="alert alert-success">Product status updated successfully.</div><?php endif; ?>
+<?php if (isset($_GET['error']) && $_GET['error'] === 'csrf'): ?><div class="alert alert-error">Security check failed. Refresh the page and try again.</div><?php endif; ?>
+<?php if (isset($_GET['error']) && $_GET['error'] === 'invalid'): ?><div class="alert alert-error">Invalid product request.</div><?php endif; ?>
+<div class="card" style="padding:0">
+<?php if (!$products): ?>
+<div class="empty-state"><strong>No products found</strong>Add your first product to start managing your catalogue.<p><a class="btn" href="product-form.php">Add Product</a></p></div>
+<?php else: ?>
+<div class="table-wrap" style="border:0;border-radius:16px"><table>
+<thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
+<tbody>
+<?php foreach ($products as $product): ?>
+<tr>
+<td><div style="display:flex;align-items:center;gap:12px">
+<?php
+$image = trim((string)($product['image'] ?? ''));
+$imgSrc = '';
+if ($image !== '') {
+    $imgSrc = (preg_match('~^https?://~i', $image) || str_starts_with($image, '/')) ? $image : '../' . ltrim($image, '/');
+}
+?>
+<?php if ($imgSrc !== ''): ?><img class="product-thumb" src="<?= admin_h($imgSrc) ?>" alt="<?= admin_h($product['name']) ?>" onerror="this.style.display='none'"><?php else: ?><div class="product-thumb" style="display:grid;place-items:center;color:#64748b;font-size:20px">▣</div><?php endif; ?>
+<div><strong><?= admin_h($product['name']) ?></strong><div style="color:var(--muted);font-size:11px;margin-top:4px">ID #<?= (int)$product['id'] ?></div></div>
+</div></td>
+<td><?= admin_h($product['category']) ?></td>
+<td>₹<?= number_format((float)$product['price'], 2) ?></td>
+<td><?= (int)$product['stock_quantity'] ?></td>
+<td><span class="status <?= (int)$product['is_active'] === 1 ? 'status-active' : 'status-inactive' ?>"><?= (int)$product['is_active'] === 1 ? 'Active' : 'Inactive' ?></span></td>
+<td><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+<a class="btn btn-secondary" href="product-edit.php?id=<?= (int)$product['id'] ?>">Edit</a>
+<form method="post" action="product-toggle.php" onsubmit="return confirm('Change this product availability?');">
+<input type="hidden" name="csrf_token" value="<?= admin_h($_SESSION['csrf_token']) ?>">
+<input type="hidden" name="id" value="<?= (int)$product['id'] ?>">
+<button class="btn <?= (int)$product['is_active'] === 1 ? 'btn-danger' : '' ?>" type="submit" style="<?= (int)$product['is_active'] === 1 ? '' : 'background:#dcfce7;color:#166534' ?>"><?= (int)$product['is_active'] === 1 ? 'Deactivate' : 'Activate' ?></button>
 </form>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
-
-    <?php if (!$products): ?>
-        <p>No products found.</p>
-    <?php endif; ?>
-</body>
-</html>
+</div></td>
+</tr>
+<?php endforeach; ?>
+</tbody></table></div>
+<?php endif; ?>
+</div>
+<?php admin_footer(); ?>

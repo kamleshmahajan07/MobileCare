@@ -1,162 +1,82 @@
-
 <?php
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/_layout.php';
 
-$allowedStatuses = [
-    'New',
-    'Contacted',
-    'In Progress',
-    'Completed',
-    'Cancelled'
-];
-
-if (empty($_SESSION['enquiry_csrf'])) {
+$allowedStatuses = ['New', 'Contacted', 'In Progress', 'Completed', 'Cancelled'];
+if (!isset($_SESSION['enquiry_csrf'])) {
     $_SESSION['enquiry_csrf'] = bin2hex(random_bytes(32));
 }
-
 $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
-
 if (!$id || $id < 1) {
     http_response_code(400);
     exit('Invalid enquiry ID.');
 }
 
-$stmt = $pdo->prepare(
-    'SELECT * FROM repair_enquiries WHERE id = ?'
-);
-$stmt->execute([$id]);
-$enquiry = $stmt->fetch();
-
-if (!$enquiry) {
-    http_response_code(404);
-    exit('Enquiry not found.');
-}
-
-$message = '';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $token = $_POST['csrf_token'] ?? '';
-    $status = $_POST['status'] ?? '';
-
-    if (
-        !is_string($token) ||
-        !hash_equals($_SESSION['enquiry_csrf'], $token)
-    ) {
-        $message = 'Invalid request. Refresh the page and try again.';
+    $token = (string)($_POST['csrf_token'] ?? '');
+    $status = (string)($_POST['status'] ?? '');
+    if (!hash_equals((string)$_SESSION['enquiry_csrf'], $token)) {
+        $error = 'Security check failed. Please refresh the page and try again.';
     } elseif (!in_array($status, $allowedStatuses, true)) {
-        $message = 'Invalid status selected.';
+        $error = 'Please select a valid status.';
     } else {
-        $update = $pdo->prepare(
-            'UPDATE repair_enquiries
-             SET status = ?, updated_at = CURRENT_TIMESTAMP
-             WHERE id = ?'
-        );
-        $update->execute([$status, $id]);
-
+        $update = $pdo->prepare('UPDATE repair_enquiries SET status = :status, updated_at = NOW() WHERE id = :id');
+        $update->execute(['status' => $status, 'id' => $id]);
         header('Location: enquiry-details.php?id=' . $id . '&updated=1');
         exit;
     }
 }
 
-$stmt = $pdo->prepare(
-    'SELECT * FROM repair_enquiries WHERE id = ?'
-);
-$stmt->execute([$id]);
-$enquiry = $stmt->fetch();
-
-if (isset($_GET['updated'])) {
-    $message = 'Enquiry status updated successfully.';
+$stmt = $pdo->prepare('SELECT * FROM repair_enquiries WHERE id = :id LIMIT 1');
+$stmt->execute(['id' => $id]);
+$enquiry = $stmt->fetch(PDO::FETCH_ASSOC);
+if (!$enquiry) {
+    http_response_code(404);
+    exit('Enquiry not found.');
 }
+admin_header('Enquiry Details', 'enquiries');
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Enquiry Details | MobileCare</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 30px auto;
-            padding: 0 16px;
-            color: #172033;
-        }
-        .panel {
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 22px;
-        }
-        .field { margin: 16px 0; }
-        label { font-weight: bold; display: block; margin-bottom: 6px; }
-        select, button { padding: 10px; }
-        button { cursor: pointer; }
-    </style>
-</head>
-<body>
-    <h1>Repair Enquiry Details</h1>
-    <p><a href="enquiries.php">← Back to All Enquiries</a></p>
-
-    <?php if ($message !== ''): ?>
-        <p><?= e($message) ?></p>
-    <?php endif; ?>
-
-    <div class="panel">
-        <div class="field">
-            <label>Enquiry ID</label>
-            <?= (int) $enquiry['id'] ?>
-        </div>
-
-        <div class="field">
-            <label>Customer Name</label>
-            <?= e($enquiry['customer_name']) ?>
-        </div>
-
-        <div class="field">
-            <label>Phone Number</label>
-            <?= e($enquiry['phone']) ?>
-        </div>
-
-        <div class="field">
-            <label>Device Model</label>
-            <?= e($enquiry['device_model']) ?>
-        </div>
-
-        <div class="field">
-            <label>Problem Description</label>
-            <?= nl2br(e($enquiry['problem_description'])) ?>
-        </div>
-
-        <div class="field">
-            <label>Current Status</label>
-            <?= e($enquiry['status']) ?>
-        </div>
-
-        <div class="field">
-            <label>Created At</label>
-            <?= e($enquiry['created_at']) ?>
-        </div>
-
-        <form method="POST">
-            <input type="hidden" name="csrf_token"
-                   value="<?= e($_SESSION['enquiry_csrf']) ?>">
-
-            <div class="field">
-                <label for="status">Update Status</label>
-                <select name="status" id="status" required>
-                    <?php foreach ($allowedStatuses as $status): ?>
-                        <option value="<?= e($status) ?>"
-                            <?= $enquiry['status'] === $status ? 'selected' : '' ?>>
-                            <?= e($status) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <button type="submit">Save Status</button>
-        </form>
+<div class="page-heading">
+    <div><h2>Request #<?= (int)$enquiry['id'] ?></h2><p>Review the submitted information and update request progress.</p></div>
+    <a class="btn btn-secondary" href="enquiries.php">← Back to Enquiries</a>
+</div>
+<?php if (isset($_GET['updated'])): ?><div class="alert alert-success">Enquiry status updated successfully.</div><?php endif; ?>
+<?php if (!empty($error)): ?><div class="alert alert-error"><?= admin_h($error) ?></div><?php endif; ?>
+<div class="card" style="margin-bottom:20px">
+    <div class="page-heading"><div><h2 style="font-size:18px">Customer Information</h2><p>Details received from the repair enquiry form.</p></div><span class="status status-neutral"><?= admin_h($enquiry['status'] ?? 'New') ?></span></div>
+    <div class="detail-grid">
+        <?php
+        $fields = [
+            'Customer Name' => $enquiry['customer_name'] ?? '',
+            'Phone' => $enquiry['phone'] ?? '',
+            'Email' => $enquiry['email'] ?? '',
+            'Device Model' => $enquiry['device_model'] ?? '',
+            'Repair Service' => $enquiry['service_type'] ?? '',
+            'Created At' => $enquiry['created_at'] ?? '',
+            'Description' => $enquiry['message'] ?? ($enquiry['issue_description'] ?? ''),
+        ];
+        foreach ($fields as $label => $value):
+        ?>
+        <div class="detail-item"><small><?= admin_h($label) ?></small><div><?= nl2br(admin_h($value !== '' ? $value : 'Not provided')) ?></div></div>
+        <?php endforeach; ?>
     </div>
-</body>
-</html>
+</div>
+<div class="card">
+    <h2 style="font-size:18px;margin:0 0 7px">Update Status</h2>
+    <p style="color:var(--muted);font-size:13px;margin:0 0 18px">Choose the latest status for this repair request.</p>
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="<?= admin_h($_SESSION['enquiry_csrf']) ?>">
+        <div class="form-group" style="max-width:420px">
+            <label for="status">Enquiry Status</label>
+            <select name="status" id="status" required>
+                <?php foreach ($allowedStatuses as $statusOption): ?>
+                    <option value="<?= admin_h($statusOption) ?>" <?= (($enquiry['status'] ?? 'New') === $statusOption) ? 'selected' : '' ?>><?= admin_h($statusOption) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="form-actions"><button class="btn" type="submit">Save Status</button><a class="btn btn-secondary" href="enquiries.php">Cancel</a></div>
+    </form>
+</div>
+<?php admin_footer(); ?>

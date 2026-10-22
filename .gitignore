@@ -1,4 +1,7 @@
+# Local database credentials (keep this file on your computer, do not commit it)
 config/database.php
 .env
 vendor/
 *.log
+.DS_Store
+Thumbs.db

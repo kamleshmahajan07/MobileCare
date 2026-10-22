@@ -1,5 +1,6 @@
 <?php
-$pageTitle = 'MobileCare | Mobile Accessories & Repair';
+$pageTitle = 'MobileCare | Anand Mobile and Electrics';
+$pageDescription = 'Mobile accessories and mobile repair enquiries at Anand Mobile and Electrics in Sachin, Surat.';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
@@ -11,8 +12,7 @@ require_once __DIR__ . '/includes/header.php';
                 <span>Smarter repairs.</span></h1>
 
             <p class="hero-description">
-                Discover everyday mobile essentials and get help
-                with your device from our repair team.
+                Explore everyday mobile essentials and send a repair enquiry to Anand Mobile and Electrics in Sachin, Surat.
             </p>
 
             <div class="hero-actions">
@@ -23,8 +23,8 @@ require_once __DIR__ . '/includes/header.php';
             </div>
 
             <div class="trust-line">
-                <span>✓ Friendly service</span>
-                <span>✓ Quality-focused repairs</span>
+                <span>✓ Sachin, Surat</span>
+                <span>✓ Open daily, 10 AM – 9 PM</span>
             </div>
         </div>
 
@@ -46,6 +46,21 @@ require_once __DIR__ . '/includes/header.php';
                 </div>
             </div>
         </div>
+    </div>
+</section>
+
+<section class="shop-strip">
+    <div class="container shop-strip-inner">
+        <div>
+            <span class="eyebrow">YOUR LOCAL SHOP</span>
+            <h2>Anand Mobile and Electrics</h2>
+            <p>Owned by Anand Singh · Sachin, Surat, Gujarat</p>
+        </div>
+        <div class="shop-strip-hours">
+            <span class="hours-icon">◷</span>
+            <div><strong>Open daily</strong><span>10:00 AM – 9:00 PM</span></div>
+        </div>
+        <a class="text-link" href="contact.php">Shop details →</a>
     </div>
 </section>
 
@@ -93,7 +108,7 @@ require_once __DIR__ . '/includes/header.php';
         <div>
             <span class="eyebrow">LET'S GET IT SORTED</span>
             <h2>Your phone needs attention?</h2>
-            <p>Submit a repair enquiry and let our team contact you.</p>
+            <p>Tell us your mobile model and the issue you need help with.</p>
         </div>
         <a href="repair-booking.php" class="btn btn-light">
             Request a Repair ↗

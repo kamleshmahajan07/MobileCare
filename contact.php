@@ -1,42 +1,52 @@
 <?php
-$pageTitle = 'Contact Us | MobileCare';
+$pageTitle = 'Contact | Anand Mobile and Electrics';
+$pageDescription = 'Contact Anand Mobile and Electrics in Sachin, Surat. Open daily from 10 AM to 9 PM.';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<section class="section container">
-    <span class="eyebrow">GET IN TOUCH</span>
-    <h1>Contact MobileCare</h1>
-    <p>Have a question about mobile accessories or repairs? Get in touch with our team.</p>
-
-    <div class="feature-grid">
-        <article class="feature-card">
-            <div class="feature-icon">📱</div>
-            <h3>Repair Enquiries</h3>
-            <p>Tell us about your mobile issue and request a repair.</p>
-            <a class="btn" href="repair-booking.php">Book a Repair</a>
-        </article>
-
-        <article class="feature-card">
-            <div class="feature-icon">🛍️</div>
-            <h3>Mobile Accessories</h3>
-            <p>Explore accessories and contact us about a product.</p>
-            <a class="btn" href="products.php">View Products</a>
-        </article>
-
-        <article class="feature-card">
-            <div class="feature-icon">⚙️</div>
-            <h3>Repair Services</h3>
-            <p>Explore the repair services available at our shop.</p>
-            <a class="btn" href="services.php">View Services</a>
-        </article>
+<section class="page-intro">
+    <div class="container">
+        <span class="eyebrow">GET IN TOUCH</span>
+        <h1>How can we help you?</h1>
+        <p>Ask about an accessory or send a repair enquiry to Anand Mobile and Electrics.</p>
     </div>
+</section>
 
-    <div class="feature-card" style="margin-top:28px">
-        <h2>Visit or Contact Our Shop</h2>
-        <p><strong>Shop Name:</strong> MobileCare</p>
-        <p><strong>Address:</strong> Add the actual shop address here.</p>
-        <p><strong>Phone:</strong> Add the shop's contact number here.</p>
-        <p><strong>Business Hours:</strong> Add the actual opening hours here.</p>
+<section class="section container">
+    <div class="contact-layout">
+        <div class="contact-main">
+            <span class="eyebrow">VISIT THE SHOP</span>
+            <h2>Anand Mobile and Electrics</h2>
+            <p class="contact-lead">Your local destination for mobile accessories and repair assistance in Sachin, Surat.</p>
+            <div class="contact-detail">
+                <span class="contact-detail-icon">⌖</span>
+                <div><strong>Address</strong><p>Sachin, Surat, Gujarat, India</p></div>
+            </div>
+            <div class="contact-detail">
+                <span class="contact-detail-icon">◷</span>
+                <div><strong>Opening hours</strong><p>10:00 AM – 9:00 PM</p></div>
+            </div>
+            <div class="contact-detail">
+                <span class="contact-detail-icon">♧</span>
+                <div><strong>Owner</strong><p>Anand Singh</p></div>
+            </div>
+            <a class="btn" href="https://www.google.com/maps/search/?api=1&query=Anand+Mobile+and+Electrics+Sachin+Surat" target="_blank" rel="noopener noreferrer">Open location in Maps ↗</a>
+            <p class="small-note">A phone number has not been provided, so please use the enquiry form for now.</p>
+        </div>
+        <div class="contact-options">
+            <article class="feature-card">
+                <div class="feature-icon">🔧</div>
+                <h3>Need a repair?</h3>
+                <p>Share your mobile model and describe the issue. Your request will be saved for the shop to review.</p>
+                <a class="btn" href="repair-booking.php">Submit repair enquiry</a>
+            </article>
+            <article class="feature-card">
+                <div class="feature-icon">▦</div>
+                <h3>Looking for an accessory?</h3>
+                <p>Browse current product listings and ask the shop about compatibility or availability.</p>
+                <a class="btn btn-outline" href="products.php">Browse products</a>
+            </article>
+        </div>
     </div>
 </section>
 
