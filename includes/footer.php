@@ -16,6 +16,7 @@
             <a href="services.php">Repair Services</a>
             <a href="about.php">About the Shop</a>
             <a href="contact.php">Contact</a>
+            <a href="/mobile_shop/admin/login.php">Admin Login</a>
         </div>
 
         <p class="copyright">
